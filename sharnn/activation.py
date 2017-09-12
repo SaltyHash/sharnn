@@ -68,7 +68,7 @@ class ReLU(LeakyReLU):
 relu = ReLU()
 
 class Sigmoid(Activation):
-    '''Sigmoid (aka Softmax)'''
+    '''Sigmoid'''
     
     def function(self, x):
         return 1/(1+np.exp(-x))
