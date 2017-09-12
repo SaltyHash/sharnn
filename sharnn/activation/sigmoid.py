@@ -3,12 +3,11 @@ import numpy as np
 from .activation import Activation
 
 class Sigmoid(Activation):
-    def __init__(self):
-        Activation.__init__(self)
+    '''Sigmoid (aka softmax)'''
     
-    def call(self, arg):
-        return 1/(1+np.exp(-arg))
+    def function(self, x):
+        return 1/(1+np.exp(-x))
     
-    def call_prime(self, arg):
-        arg = self.call(arg)
-        return arg*(1-arg)
+    def prime(self, x):
+        x = self(x)
+        return x*(1-x)

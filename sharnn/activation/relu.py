@@ -3,11 +3,14 @@ import numpy as np
 from .activation import Activation
 
 class ReLU(Activation):
-    def __init__(self):
-        Activation.__init__(self)
+    '''Rectified Linear Unit'''
     
-    def call(self, arg):
-        return np.max((0.0, arg))
+    def function(self, x):
+        return np.maximum(0, x)
     
-    def call_prime(self, arg):
-        return (arg > 0)
+    def prime(self, x):
+        # Assume x is an instance of np.ndarray; otherwise, treat as single
+        try:
+            return (x > 0).astype('float')
+        except AttributeError:
+            return float(x > 0)
