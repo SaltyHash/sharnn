@@ -1,18 +1,35 @@
 import numpy as np
 
+from .layer import Layer
+
 class ANN:
-    '''Represents an L-layer neural network.'''
+    '''A multi-layer neural network.'''
     
-    def __init__(self, layer_dims):
+    def __init__(self, input_size, layers):
         '''Initialize a new ANN.
         
         Args:
-        - layer_dims: A list of layer dimensions of the form
-                      [<inputs>, ..., <outputs>].
+        - input_size: The number of input features of the network.
+        - layers    : Layer instances comprising the network.
         '''
-        if (len(layer_dims) < 2):
-            raise ValueError('layer_dims must have at least input and output layers.')
-        self.layer_dims = layer_dims
+        if (input_size <= 0):
+            raise ValueError('"input_size" must be > 0.')
+        self.input_size = input_size
         
-        # Build layers
-        self.layers = []
+        if not len(layers):
+            raise ValueError('"layers" must have at least one Layer.')
+        for layer in layers:
+            if not isinstance(layer, Layer):
+                raise ValueError('"layers" contains a non-Layer object.')
+        self.layers = layers
+        
+        # Initialize layers
+        prev_layer_size = input_size
+        for layer in layers:
+            layer.init_params(prev_layer_size)
+            prev_layer_size = layer.size
+    
+    def __call__(self, x):
+        for layer in self.layers:
+            x = layer.forward(x, cache=False)
+        return x
