@@ -37,6 +37,16 @@ class Activation:
         y_prime_est = (self(x+epsilon) - self(x-epsilon)) / (2*epsilon)
         return np.max(np.abs(self.prime(x)-y_prime_est))
 
+class Identity(Activation):
+    '''Identity'''
+    
+    def function(self, x):
+        return x
+    
+    def prime(self, x):
+        return 1.0
+identity = Identity()
+
 class LeakyReLU(Activation):
     '''Leaky Rectified Linear Unit'''
     
@@ -77,3 +87,13 @@ class Sigmoid(Activation):
         x = self(x)
         return x*(1-x)
 sigmoid = Sigmoid()
+
+class Tanh(Activation):
+    '''Hyperbolic Tangent'''
+    
+    def function(self, x):
+        return np.tanh(x)
+    
+    def prime(self, x):
+        return 1 - np.power(np.tanh(x), 2)
+tanh = Tanh()
