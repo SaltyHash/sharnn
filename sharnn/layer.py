@@ -5,18 +5,6 @@ from .activation import Activation
 class Layer:
     '''Represents a single layer in an ANN.'''
     
-    class Cache:
-        def __init__(self):
-            self.clear()
-        
-        def clear(self):
-            self.linear_forward     = None
-            self.activation_forward = None
-    
-    class Parameters:
-        W = None
-        b = None
-    
     def __init__(self, size, activation, dropout_prob=0.0):
         '''
         Args:
@@ -35,23 +23,32 @@ class Layer:
         if (dropout_prob < 0) or (dropout_prob > 1):
             raise ValueError('"dropout_prob" must be in range [0, 1]')
         self.dropout_prob = dropout_prob
-        
-        self.cache = Layer.Cache()
     
-    def forward(self, x, cache=True):
-        '''Run the input "x" through the layer and return the output.
-        "x" must be of shape (prev_layer_size, examples).
+    def backward(self, learning_rate, prev_activation, linear, d_activation):
+        # Determine d_W, d_b, and prev_d_activation
+        m = prev_activation.shape[1]
+        d_linear = d_activation * self.activation.prime(linear)
+        d_W      = (1/m)*d_linear.dot(prev_activation.T)
+        assert d_W.shape == self.W.shape,\
+            'W.shape = {} / d_W.shape = {}'.format(self.W.shape, d_W.shape)
+        d_b      = (1/m)*np.sum(d_linear, axis=1, keepdims=True)
+        assert d_b.shape == self.b.shape
+        prev_d_activation = self.W.T.dot(d_linear)
+        
+        # Update parameters and return prev_d_activation
+        self.W = self.W - learning_rate*d_W
+        self.b = self.b - learning_rate*d_b
+        return prev_d_activation
+    
+    def forward(self, x):
+        '''Run the input "x" through the layer, where "x" must be of shape
+        (prev_layer_size, examples).  Returns tuple (linear, activation).
         '''
-        lf = self.params.W.dot(x) + self.params.b
-        af = self.activation(lf)
-        self.cache.linear_forward     = lf if cache else None
-        self.cache.activation_forward = af if cache else None
-        return af
+        linear = self.W.dot(x) + self.b
+        return (linear, self.activation(linear))
     
     def init_params(self, prev_layer_size, scale=0.01):
-        self.params = Layer.Parameters()
-        self.params.W = np.random.normal(
+        self.W = np.random.normal(
             size=(self.size, prev_layer_size),
             scale=scale)
-        self.params.b = np.zeros((self.size, 1))
-        return self.params
+        self.b = np.zeros((self.size, 1))

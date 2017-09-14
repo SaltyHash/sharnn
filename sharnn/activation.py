@@ -1,31 +1,26 @@
+'''Contains several common activation functions.'''
+
 import numpy as np
 
 class Activation:
-    '''Base class for representing an activation function and its derivative.
-    
-    Example:
-    >>> a = sharnn.activation.<Activation Class>()
-    >>> assert a.check_prime() < 1e-5
-    >>> y = a(x)
-    >>> y_prime = a.prime(x)
-    '''
+    '''Base class for representing an activation and its first derivative.'''
     
     def __call__(self, x):
         return self.function(x)
     
     def function(self, x):
-        '''The actual activation function.'''
+        '''The activation function.'''
         raise NotImplementedError('"function" method needs to be overridden.')
     
     def prime(self, x):
-        '''The first derivative of the activation function.'''
+        '''The first derivative of function() w.r.t. "x".'''
         raise NotImplementedError('"prime" method needs to be overridden.')
     
     def check_prime(self,
             checks=1000, epsilon=1e-7, min_value=-100, max_value=100):
         '''Checks if prime() appears to be the derivative of function().
         
-        Derivative estimates are made 'checks' times using this formula,
+        Derivative estimates are made "checks" times using this formula,
         with x randomly generated in the range of [min_value, max_value):
             y_prime_est = (self(x+epsilon) - self(x-epsilon)) / (2*epsilon)
         
@@ -52,6 +47,7 @@ class LeakyReLU(Activation):
     
     def __init__(self, slope):
         '''slope must be in range [0, 1).'''
+        Activation.__init__(self)
         if (slope < 0) or (slope >= 1):
             raise ValueError('slope must be in range [0, 1).')
         self.slope = slope
