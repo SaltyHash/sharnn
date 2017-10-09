@@ -1,20 +1,22 @@
-'''Contains common cost functions.'''
+"""Contains common cost functions."""
 
 import numpy as np
 
+
 class Cost:
-    '''Base class representing a cost function.'''
-    
+    """Base class representing a cost function."""
+
     def __call__(self, y, y_predict):
         return self.function(y, y_predict)
-    
+
     def function(self, y, y_predict):
-        '''The cost function.'''
+        """The cost function."""
         raise NotImplementedError()
-    
+
     def prime(self, y, y_predict):
-        '''The derivative of function() w.r.t. "y_predict".'''
+        """The derivative of function() w.r.t. "y_predict"."""
         raise NotImplementedError()
+
 
 class CrossEntropy(Cost):
     def function(self, y, y_predict):
@@ -24,9 +26,11 @@ class CrossEntropy(Cost):
             m = y.shape[1]
         except AttributeError:
             m = 1
-        cost = (-1/m)*np.sum(y*np.log(y_predict) + (1-y)*np.log(1-y_predict))
+        cost = (-1 / m) * np.sum(y * np.log(y_predict) + (1 - y) * np.log(1 - y_predict))
         return np.squeeze(cost)
-    
+
     def prime(self, y, y_predict):
-        return (1-y)/(1-y_predict) - y/y_predict
+        return (1 - y) / (1 - y_predict) - y / y_predict
+
+
 cross_entropy = CrossEntropy()
