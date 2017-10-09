@@ -36,6 +36,8 @@ class Layer:
         prev_d_activation = self.W.T.dot(d_linear)
         
         # Update parameters and return prev_d_activation
+        self.prev_W = np.copy(self.W)
+        self.prev_b = np.copy(self.b)
         self.W = self.W - learning_rate*d_W
         self.b = self.b - learning_rate*d_b
         return prev_d_activation
@@ -47,8 +49,20 @@ class Layer:
         linear = self.W.dot(x) + self.b
         return (linear, self.activation(linear))
     
-    def init_params(self, prev_layer_size, scale=0.01):
+    def init_params(self, prev_layer_size):
+        # He initialization scalar
+        he_scalar = np.sqrt(2/prev_layer_size)
         self.W = np.random.normal(
             size=(self.size, prev_layer_size),
-            scale=scale)
+            scale=he_scalar)
         self.b = np.zeros((self.size, 1))
+    
+    def rollback_parameters(self):
+        '''Returns the parameters to their previous state.  Useful in the
+        event that the cost is higher after a training iteration.  Can only
+        be called once after a backwards pass.
+        '''
+        self.W = self.prev_W
+        self.b = self.prev_b
+        self.prev_W = None
+        self.prev_b = None

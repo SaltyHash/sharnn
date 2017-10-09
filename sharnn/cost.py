@@ -18,6 +18,8 @@ class Cost:
 
 class CrossEntropy(Cost):
     def function(self, y, y_predict):
+        assert np.all(y_predict > 0)
+        assert np.all(y_predict < 1)
         try:
             m = y.shape[1]
         except AttributeError:
