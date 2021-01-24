@@ -54,7 +54,7 @@ if 1:
     # # Get MNIST data
 
     # Get MNIST training and test sets as numpy arrays
-    base_dir = '/home/austin/Downloads/mnist'
+    base_dir = '/mnt/data/austin/datasets/mnist'
     mnist_train_data = idx2numpy.convert_from_file(
         base_dir + '/train-images-idx3-ubyte/data')
     mnist_train_labels = idx2numpy.convert_from_file(
@@ -131,48 +131,47 @@ if 1:
 
 
     def training_callback(args):
-        cost = args['cost']
-        d_cost = args['d_cost']
-        d2_cost = args['d2_cost']
-        i = args['iter']
-        learning_rate = args['learning_rate']
-
-        iter_history.append(i)
+        # Update iteration history
+        iter_history.append(args['iter'])
 
         # Update cost plot
-        cost_history.append(cost)
+        cost_history.append(args['cost'])
         min_height = min(cost_history)
         min_height -= 0.1 * abs(min_height)
         max_height = max(cost_history)
         max_height += 0.1 * abs(max_height)
-        cost_subplot.axis([0, max(i, 1), min_height, max_height])
+        # noinspection PyTypeChecker
+        cost_subplot.axis([0, max(iter_history + [1]), min_height, max_height])
         cost_line.set_data(iter_history, cost_history)
 
         # Update d_cost plot
-        d_cost_history.append(d_cost)
+        d_cost_history.append(args['d_cost'])
         min_height = min(d_cost_history)
         min_height -= 0.1 * abs(min_height)
         max_height = max(d_cost_history)
         max_height += 0.1 * abs(max_height)
-        d_cost_subplot.axis([0, max(i, 1), min_height, max_height])
+        # noinspection PyTypeChecker
+        d_cost_subplot.axis([0, max(iter_history + [1]), min_height, max_height])
         d_cost_line.set_data(iter_history, d_cost_history)
 
         # Update d2_cost plot
-        d2_cost_history.append(d2_cost)
+        d2_cost_history.append(args['d2_cost'])
         min_height = min(d2_cost_history)
         min_height -= 0.1 * abs(min_height)
         max_height = max(d2_cost_history)
         max_height += 0.1 * abs(max_height)
-        d2_cost_subplot.axis([0, max(i, 1), min_height, max_height])
+        # noinspection PyTypeChecker
+        d2_cost_subplot.axis([0, max(iter_history + [1]), min_height, max_height])
         d2_cost_line.set_data(iter_history, d2_cost_history)
 
         # Update learning_rate plot
-        learning_rate_history.append(learning_rate)
+        learning_rate_history.append(args['learning_rate'])
         min_height = min(learning_rate_history)
         min_height -= 0.1 * abs(min_height)
         max_height = max(learning_rate_history)
         max_height += 0.1 * abs(max_height)
-        learning_rate_subplot.axis([0, max(i, 1), min_height, max_height])
+        # noinspection PyTypeChecker
+        learning_rate_subplot.axis([0, max(iter_history + [1]), min_height, max_height])
         learning_rate_line.set_data(iter_history, learning_rate_history)
 
         figure.canvas.draw()
@@ -191,10 +190,10 @@ if 1:
     else:
         digit_classifier = sharnn.ANN(
             input_size=input_features,
-            layers=(
-                sharnn.layer.Layer(100, sharnn.activation.LeakyReLU(0.02)),
-                sharnn.layer.Layer(output_features, sharnn.activation.sigmoid),
-            ),
+            layers=[
+                sharnn.layer.Layer(100, sharnn.activation.relu),
+                sharnn.layer.Layer(output_features, sharnn.activation.sigmoid)
+            ],
             cost_func=sharnn.cost.cross_entropy
         )
 
@@ -207,11 +206,12 @@ if 1:
         mnist_train_labels,
         iters=iters,
         # stop_date=datetime.now() + timedelta(0, 15, 0),
-        learning_rate=0.4,  # 1.2,
+        learning_rate=1,
         learning_rate_gain=1.02,
         learning_rate_decay=0.5,
         callback=training_callback,
-        max_cpu_usage=75
+        max_cpu_usage=100,
+        print_every=5
     )
     print('digit_classifier.train(...) -> {}'.format(output))
 
@@ -231,3 +231,4 @@ if 1:
         print('Saving classifier to "{}"...'.format(digit_classifier_file))
         with open(digit_classifier_file, 'wb') as f:
             pickle.dump(digit_classifier, f)
+

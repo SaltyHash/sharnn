@@ -106,6 +106,7 @@ class ANN:
         cost_history = [pre_train_cost] * 4
         increased_learning_rate = False
         successes = 0
+        hit_max = False
 
         # Run backprop until iters or stop_date is reached
         start_date = datetime.now()
@@ -113,7 +114,7 @@ class ANN:
         while (not iters or i < iters) and (not stop_date or datetime.now() < stop_date):
             # Perform single parameter update across all layers
             t0 = process_time()
-            for _ in range(3):
+            for _ in range(1):
                 i += 1
                 d_activation = self.cost_func.prime(y, y_predict)
                 for l in reversed(range(len(self.layers))):
@@ -135,34 +136,29 @@ class ANN:
                 old_y_predict = y_predict
                 old_caches = caches
 
-                # Update cost history and derivatives
-                cost_history = [cost] + cost_history[:3]
-                d_cost = cost_history[0]  - cost_history[1]
-                d2_cost = cost_history[0] - 2 * cost_history[1] + cost_history[2]
-                d3_cost = cost_history[0] - 3 * cost_history[1] + 3 * cost_history[2] - cost_history[3]
-
-                new_learning_rate = learning_rate * (1 + 0.02 * (3 + successes ** 2 - 1) / successes ** 2)
+                #new_learning_rate = learning_rate * (1 + 0.02 * (3 + successes ** 2 - 1) / successes ** 2)
+                if hit_max:
+                    new_learning_rate = learning_rate_gain * learning_rate
+                else:
+                    new_learning_rate = 2 * learning_rate
 
             # - Cost went UP?
             else:
                 successes = 0
+                hit_max = True
 
                 # Pretend this NEVER happened...
                 for layer in self.layers:
                     layer.rollback_parameters()
                 y_predict, caches = old_y_predict, old_caches
 
-                new_learning_rate = learning_rate * 0.5
+                new_learning_rate = learning_rate_decay * learning_rate
 
-            # Execute the callback
-            if callable(callback):
-                callback({
-                    'cost': cost,
-                    'd_cost': d_cost,
-                    'd2_cost': d2_cost,
-                    'iter': i,
-                    'learning_rate': learning_rate,
-                })
+            # Update cost history and derivatives
+            cost_history = [cost] + cost_history[:3]
+            d_cost = cost_history[0]  - cost_history[1]
+            d2_cost = cost_history[0] - 2 * cost_history[1] + cost_history[2]
+            d3_cost = cost_history[0] - 3 * cost_history[1] + 3 * cost_history[2] - cost_history[3]
 
             # Limit CPU usage
             if max_cpu_usage < 100:
@@ -184,27 +180,15 @@ class ANN:
                 print('Est. stop date: {} ({} remaining)'.format(
                     str(est_stop_date)[:-7], str(est_stop_date - now)[:-7]))
 
-            '''
-            p = 0.05
-            # Cost is at least going down?
-            if (d_cost < 0):
-                # We're doing something right? Keep doing it
-                if (d3_cost < 0):
-                    print('All good; {} learning rate'.format(
-                        'increasing' if increased_learning_rate else 'decreasing'))
-                    learning_rate *= (1+p) if increased_learning_rate else (1-p)
-                # We've screwed up? Try to fix it
-                else:
-                    increased_learning_rate = not increased_learning_rate
-                    print('Not looking good; {} learning rate'.format(
-                        'increasing' if increased_learning_rate else 'decreasing'))
-                    learning_rate *= (1+p) if increased_learning_rate else (1-2*p)
-            # Cost went up?
-            if (d_cost > 0):
-                print('Learning rate too high')
-                learning_rate *= 0.75
-                increased_learning_rate = False
-            '''
+                # Execute the callback
+                if callable(callback):
+                    callback({
+                        'cost': cost,
+                        'd_cost': d_cost,
+                        'd2_cost': d2_cost,
+                        'iter': i,
+                        'learning_rate': learning_rate,
+                    })
 
             # Update variables
             i += 1
@@ -215,3 +199,4 @@ class ANN:
         # Return pre- and post-training costs
         post_train_cost = self.cost_func(y, y_predict)
         return pre_train_cost, post_train_cost
+

@@ -32,5 +32,15 @@ class CrossEntropy(Cost):
     def prime(self, y, y_predict):
         return (1 - y) / (1 - y_predict) - y / y_predict
 
-
 cross_entropy = CrossEntropy()
+
+
+class MeanSquareError(Cost):
+    def function(self, y, y_predict):
+        return 0.5 * np.sum(np.power(y - y_predict, 2))
+
+    def prime(self, y, y_predict):
+        return (y - y_predict) * -y_predict
+
+mse = MeanSquareError()
+

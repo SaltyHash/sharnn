@@ -41,7 +41,10 @@ class Identity(Activation):
         return x
 
     def prime(self, x):
-        return 1.0
+        try:
+            return np.ones(x.shape)
+        except AttributeError:
+            return 1.0
 
 
 identity = Identity()
@@ -108,3 +111,28 @@ class Tanh(Activation):
 
 
 tanh = Tanh()
+
+
+class Sin(Activation):
+    def function(self, x):
+        return np.sin(x)
+
+    def prime(self, x):
+        return np.cos(x)
+
+
+class Sin2(Activation):
+    def function(self, x):
+        return 0.5 * np.power(np.sin(x), 2)
+
+    def prime(self, x):
+        return np.sin(x) * np.cos(x)
+
+
+class Sin3(Activation):
+    def function(self, x):
+        return 0.5 + 0.4999 * np.sin(x)
+
+    def prime(self, x):
+        return 0.4999 * np.cos(x)
+
