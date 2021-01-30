@@ -9,6 +9,9 @@ class Activation:
     def __call__(self, x):
         return self.function(x)
 
+    def __str__(self) -> str:
+        return self.__class__.__name__
+
     def function(self, x):
         """The activation function."""
         raise NotImplementedError('"function" method needs to be overridden.')
@@ -60,6 +63,9 @@ class LeakyReLU(Activation):
             raise ValueError('slope must be in range [0, 1).')
         self.slope = slope
 
+    def __str__(self) -> str:
+        return f'{self.__class__.__name__}(slope={self.slope})'
+
     def function(self, x):
         return np.maximum(self.slope * x, x)
 
@@ -81,6 +87,9 @@ class ReLU(LeakyReLU):
     def __init__(self):
         """"""
         LeakyReLU.__init__(self, 0.0)
+
+    def __str__(self) -> str:
+        return Activation.__str__(self)
 
 
 relu = ReLU()
@@ -129,10 +138,10 @@ class Sin2(Activation):
         return np.sin(x) * np.cos(x)
 
 
-class Sin3(Activation):
+class Test0(Activation):
     def function(self, x):
-        return 0.5 + 0.4999 * np.sin(x)
+        return x / (1 + np.sign(x) * x)
 
     def prime(self, x):
-        return 0.4999 * np.cos(x)
+        return np.power(1 + np.sign(x) * x, -2)
 

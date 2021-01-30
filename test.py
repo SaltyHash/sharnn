@@ -130,48 +130,61 @@ if 1:
     learning_rate_line, = learning_rate_subplot.plot([], [], 'k-')
 
 
+    def limit_list(list_, max_len_) -> None:
+        if max_len_ <= 0:
+            return
+        while len(list_) > max_len_:
+            del list_[0]
+
     def training_callback(args):
+        max_history = 20
+
         # Update iteration history
         iter_history.append(args['iter'])
+        limit_list(iter_history, max_history)
 
         # Update cost plot
         cost_history.append(args['cost'])
+        limit_list(cost_history, max_history)
         min_height = min(cost_history)
         min_height -= 0.1 * abs(min_height)
         max_height = max(cost_history)
         max_height += 0.1 * abs(max_height)
         # noinspection PyTypeChecker
-        cost_subplot.axis([0, max(iter_history + [1]), min_height, max_height])
+        cost_subplot.axis([iter_history[0], max(iter_history + [1]), min_height, max_height])
         cost_line.set_data(iter_history, cost_history)
 
         # Update d_cost plot
         d_cost_history.append(args['d_cost'])
+        limit_list(d_cost_history, max_history)
         min_height = min(d_cost_history)
         min_height -= 0.1 * abs(min_height)
         max_height = max(d_cost_history)
         max_height += 0.1 * abs(max_height)
         # noinspection PyTypeChecker
-        d_cost_subplot.axis([0, max(iter_history + [1]), min_height, max_height])
+        d_cost_subplot.axis([iter_history[0], max(iter_history + [1]), min_height, max_height])
         d_cost_line.set_data(iter_history, d_cost_history)
 
         # Update d2_cost plot
         d2_cost_history.append(args['d2_cost'])
+        limit_list(d2_cost_history, max_history)
         min_height = min(d2_cost_history)
         min_height -= 0.1 * abs(min_height)
         max_height = max(d2_cost_history)
         max_height += 0.1 * abs(max_height)
         # noinspection PyTypeChecker
-        d2_cost_subplot.axis([0, max(iter_history + [1]), min_height, max_height])
+        d2_cost_subplot.axis([iter_history[0], max(iter_history + [1]), min_height, max_height])
         d2_cost_line.set_data(iter_history, d2_cost_history)
 
         # Update learning_rate plot
         learning_rate_history.append(args['learning_rate'])
+        limit_list(learning_rate_history, max_history)
         min_height = min(learning_rate_history)
         min_height -= 0.1 * abs(min_height)
         max_height = max(learning_rate_history)
         max_height += 0.1 * abs(max_height)
         # noinspection PyTypeChecker
-        learning_rate_subplot.axis([0, max(iter_history + [1]), min_height, max_height])
+        learning_rate_subplot.axis([iter_history[0], max(iter_history + [1]), min_height, max_height])
         learning_rate_line.set_data(iter_history, learning_rate_history)
 
         figure.canvas.draw()
@@ -191,7 +204,7 @@ if 1:
         digit_classifier = sharnn.ANN(
             input_size=input_features,
             layers=[
-                sharnn.layer.Layer(100, sharnn.activation.relu),
+                sharnn.layer.Layer(64, sharnn.activation.sigmoid),
                 sharnn.layer.Layer(output_features, sharnn.activation.sigmoid)
             ],
             cost_func=sharnn.cost.cross_entropy
@@ -201,14 +214,21 @@ if 1:
 
     # # Train model
 
+    regen_steps = 100
+    learning_rate_decay = 0.75
+    from math import log2
+    learning_rate_gain = 2 ** (log2(1 / learning_rate_decay) / regen_steps)
+    print('learning_rate_decay =', learning_rate_decay)
+    print('learning_rate_gain =', learning_rate_gain) 
+
     output = digit_classifier.train(
         mnist_train_data,
         mnist_train_labels,
         iters=iters,
         # stop_date=datetime.now() + timedelta(0, 15, 0),
         learning_rate=1,
-        learning_rate_gain=1.02,
-        learning_rate_decay=0.5,
+        learning_rate_gain=learning_rate_gain,
+        learning_rate_decay=learning_rate_decay,
         callback=training_callback,
         max_cpu_usage=100,
         print_every=5

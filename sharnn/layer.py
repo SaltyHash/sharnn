@@ -28,6 +28,9 @@ class Layer:
         self.prev_weights = self.weights = None
         self.prev_biases = self.biases = None
 
+    def __str__(self) -> str:
+        return f'{self.size} x {self.activation}'
+
     def backward(self, learning_rate, prev_activation, linear, d_activation):
         # Determine d_W, d_b, and prev_d_activation
         m = prev_activation.shape[1]
@@ -70,3 +73,9 @@ class Layer:
         self.biases = self.prev_biases
         self.prev_weights = None
         self.prev_biases = None
+
+    def print_info(self) -> str:
+        print(f'size = {self.size}')
+        print(f'weights: min = {np.min(self.weights)}; max = {np.max(self.weights)}; avg = {np.mean(self.weights)}')
+        print(f'biases : min = {np.min(self.biases)}; max = {np.max(self.biases)}; avg = {np.mean(self.biases)}')
+

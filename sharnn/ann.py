@@ -171,6 +171,13 @@ class ANN:
                 now = datetime.now()
                 est_stop_date = start_date + (now - start_date) * iters / (i + 1)
 
+                #print()
+                #for i in range(1, len(self.layers)):
+                #    print(f'Layer {i}:')
+                #    self.layers[i].print_info()
+                for layer in self.layers:
+                    print(layer)
+
                 print('\n{:0{}}: Cost={:.3e} ({:+.3e})'.format(
                     i, iters_len, cost, d_cost))
                 print(print_prefix + 'learning_rate={:.3e}'.format(
